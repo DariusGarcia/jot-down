@@ -5,12 +5,20 @@ const util = require('util')
 // returns an object as a promise
 const readData = util.promisify(fs.readFile)
 const writeData = util.promisify(fs.writeFile)
-const uuidv1 = require('uuid/v1')
+const { v1: uuid } = require('uuid')
 
 class dbUtil {
+	// returns all data from db.json
+	readNote() {
+		return readData('../db/db.json', 'utf-8')
+	}
+	// writes data to db.json
+	writeNote() {
+		return writeData('../db/db.json', JSON.stringify(data))
+	}
 	// returns all saved notes and makes a new array
 	fetchData() {
-		return readNote().then((data) => {
+		return this.readNote().then((data) => {
 			let notesData
 
 			if (typeof notesData != Array) {
@@ -22,36 +30,32 @@ class dbUtil {
 			return notesData
 		})
 	}
-	// returns all data from db.json
-	readNote() {
-		return readData('../db/db.json', 'utf-8')
-	}
-	// writes data to db.json
-	writeNote() {
-		return writeData('../db/db.json', JSON.stringify(data))
-	}
 
 	// get all notes that want to be saved and push it into the existing notes array
 	fetchNotes() {
 		return this.readNote().then((notes) => {
 			let tempNotesArray
-			tempNotesArray.push(JSON.parse(notes))
+			try {
+				tempNotesArray = [].concat(JSON.parse(notes))
+			} catch (err) {
+				tempNotesArray = []
+			}
 			return tempNotesArray
 		})
 	}
 
 	// save new note to db.json
 	saveNote(data) {
-		const { title, text } = note
+		const { title, text } = data
 		if (data.title === null || data.text === null) {
 			console.log('Cant be empty.')
 			return
 		}
-		const noteToAdd = { title, text, id: uuidv1() }
+		const noteToAdd = { title, text, id: uuid() }
 
 		return this.fetchData()
 			.then((data) => [...data, noteToAdd])
-			.then((notesArray) => writeData(notesArray))
+			.then((notesArray) => this.writeData(notesArray))
 			.then(() => noteToAdd)
 	}
 

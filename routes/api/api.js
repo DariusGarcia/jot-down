@@ -1,14 +1,22 @@
 const router = require('express').Router()
-const util = require('../../utils/utils-db')
+const dbUtil = require('../../utils/utils-db')
 
 router.get('/notes', (req, res) => {
-	util.fetchData().then((data) => {
-		return res.json(data)
-	})
+	dbUtil
+		.fetchData()
+		.then((data) => {
+			return res.json(data)
+		})
+		.catch((err) => res.status(500).json(err))
 })
 
-router.post('/users', (req, res) => {
-	res.json(req.body)
+router.post('/notes', (req, res) => {
+	dbUtil
+		.saveNote(req.body)
+		.then((data) => {
+			res.json(data)
+		})
+		.catch((err) => res.status(500).json(err))
 })
 
 module.exports = router
