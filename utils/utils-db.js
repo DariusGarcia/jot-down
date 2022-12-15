@@ -31,6 +31,16 @@ class dbUtil {
 		return writeData('../db/db.json', JSON.stringify(data))
 	}
 
+	// get all notes that want to be saved and push it into the existing notes array
+	fetchNotes() {
+		return this.readNote().then((notes) => {
+			let tempNotesArray
+			tempNotesArray.push(JSON.parse(notes))
+			return tempNotesArray
+		})
+	}
+
+	// save new note to db.json
 	saveNote(data) {
 		const { title, text } = note
 		if (data.title === null || data.text === null) {
@@ -39,9 +49,18 @@ class dbUtil {
 		}
 		const noteToAdd = { title, text, id: uuidv1() }
 
-		return fetchData()
+		return this.fetchData()
 			.then((data) => [...data, noteToAdd])
 			.then((notesArray) => writeData(notesArray))
 			.then(() => noteToAdd)
 	}
+
+	// function to remove the saved note from the db
+	removeSavedNote(id) {
+		return this.fetchNotes()
+			.then((res) => res.filter((note) => note.id !== id))
+			.then((newNoteArray) => this.writeNote(newNoteArray))
+	}
 }
+
+module.exports = new dbUtil()
